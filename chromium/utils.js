@@ -98,6 +98,7 @@ async function fillContactForm(page, config) {
     const field = await findField(page, keywords, key);
     if (field) {
       try {
+        await humanLikeScroll(field); // ★人間らしいスクロールを追加
         await humanLikeDelay(300, 800);
         await humanLikeTyping(field, value, page);
         log.info(`  "${key}" 項目に入力しました。`);
@@ -119,32 +120,78 @@ async function fillContactForm(page, config) {
  */
 async function submitForm(page, config) {
   log.info('送信ボタンを探しています...');
-  const selectors = config.submitKeywords.map(kw => [
-    `button:has-text("${kw}")`, `input[type="submit"][value*="${kw}" i]`,
-    `button[title*="${kw}" i]`, `a:has-text("${kw}")`
-  ].join(', '));
+  let submitButton = null;
 
-  const submitButton = page.locator(selectors.join(', ')).first();
+  for (const kw of config.submitKeywords) {
+    // getByRole is the recommended way for buttons and links, and it performs a substring match by default.
+    const button = page.getByRole('button', { name: kw }).first();
+    if (await button.isVisible()) {
+      submitButton = button;
+      log.info(`ボタン「${kw}」を検出しました。`);
+      break;
+    }
+    const link = page.getByRole('link', { name: kw }).first();
+    if (await link.isVisible()) {
+      submitButton = link;
+      log.info(`リンク「${kw}」を検出しました。`);
+      break;
+    }
+    // Fallback for input[type=submit]
+    const input = page.locator(`input[type="submit"][value*="${kw}" i]`).first();
+    if (await input.isVisible()) {
+      submitButton = input;
+      log.info(`input[type=submit]「${kw}」を検出しました。`);
+      break;
+    }
+  }
 
-  try {
-    await submitButton.waitFor({ state: 'visible', timeout: 5000 });
-    log.info('送信ボタンをクリックします。');
-    await humanLikeDelay();
+  if (submitButton) {
+    try {
+      await submitButton.waitFor({ state: 'visible', timeout: 5000 });
+      log.info('送信ボタンをクリックします。');
+      await humanLikeDelay();
+      await submitButton.click();
+      return true;
+    } catch (error) {
+      log.warn(`送信ボタンのクリックに失敗しました: ${error.message}`);
+      return false;
+    }
+  } else {
+    log.warn('設定されたキーワードに一致する送信ボタンが見つかりませんでした。');
+    return false;
+  }
+}
 
-    // フォームのデフォルト送信イベントをキャンセルするJavaScriptを注入
-    await page.evaluate(() => {
-      document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }, { capture: true });
-      });
-    });
+/**
+ * 人間のようにスムーズに要素までスクロールする
+ * @param {import('playwright').Locator} locator
+ */
+async function humanLikeScroll(locator) {
+  await locator.evaluate(element => {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  });
+  // スクロールアニメーションのための待機
+  await locator.page().waitForTimeout(1000); // 1秒待機。必要に応じて調整。
+}
 
-    await submitButton.click();
+/**
+ * 現在のページに主要なフォーム項目が存在するかどうかで、フォームページかどうかを判定する
+ * @param {import('playwright').Page} page
+ * @param {object} config
+ */
+async function isContactFormPage(page, config) {
+  log.info('現在のページがフォームページか判定します...');
+  const nameKeywords = config.fieldMappings.contact_name || [];
+  const emailKeywords = config.fieldMappings.email || [];
+
+  const nameField = await findField(page, nameKeywords, 'contact_name');
+  const emailField = await findField(page, emailKeywords, 'email');
+
+  if (nameField && emailField) {
+    log.info('主要なフォーム項目（氏名、メール）が見つかりました。フォームページと判定します。');
     return true;
-  } catch (error) {
-    log.warn('送信ボタンが見つかりませんでした。');
+  } else {
+    log.warn('主要なフォーム項目が見つかりません。フォームページではないと判定します。');
     return false;
   }
 }
@@ -155,5 +202,7 @@ module.exports = {
   findContactPage,
   findField,
   fillContactForm,
-  submitForm
+  submitForm,
+  isContactFormPage,
+  humanLikeScroll
 };

@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const log = require('./log');
-const { humanLikeDelay, humanLikeTyping, findContactPage, fillContactForm, submitForm } = require('./utils');
+const { humanLikeDelay, humanLikeTyping, findContactPage, fillContactForm, submitForm, isContactFormPage } = require('./utils');
 
 // =============================================================================
 // 設定ファイルの読み込み
@@ -66,6 +66,12 @@ try {
 
     const page = await context.newPage();
 
+    // mailto: リンクのナビゲーションをブロック (ページ遷移前に設定)
+    await page.route('**/mailto:*', route => {
+      log.warn(`mailto: リンクへのナビゲーションをブロックしました: ${route.request().url()}`);
+      route.abort();
+    });
+
     // ブラウザのコンソールログをターミナルに出力
     page.on('console', msg => {
       log.info(`[Browser Console] ${msg.type().toUpperCase()}: ${msg.text()}`);
@@ -91,30 +97,23 @@ try {
       }
     });
 
-    // mailto: リンクのナビゲーションをブロック
-    await page.route('**/mailto:*', route => {
-      log.warn(`mailto: リンクへのナビゲーションをブロックしました: ${route.request().url()}`);
-      route.abort();
-    });
-
     const url = process.argv[2] || `file://${__dirname}/contact.html`;
     log.info(`ナビゲーション先のURL: ${url}`);
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await humanLikeDelay(1000, 2000);
 
-    // URLが直接フォームページを指している場合は、お問い合わせページ探索をスキップ
-    const isDirectFormPage = url.includes('contact-form-test.html'); // または他の識別子
-
-    if (!url.startsWith('file://') && !isDirectFormPage) {
+    // 現在のページにフォームが存在しないかチェックし、存在しない場合のみリンクを探す
+    if (!url.startsWith('file://') && !(await isContactFormPage(page, config))) {
+      log.info('現在のページにフォームが見つからないため、お問い合わせページへのリンクを探します。');
       const foundContactPage = await findContactPage(page, config);
       if (!foundContactPage) {
         log.error('お問い合わせページが見つからなかったため、処理を終了します。');
         return;
       }
       await humanLikeDelay(1000, 2000);
-    } else if (isDirectFormPage) {
-      log.info('直接フォームページへのURLが指定されたため、お問い合わせページ探索をスキップします。');
+    } else {
+      log.info('現在のページにフォームが見つかったため、リンク検索をスキップします。');
     }
 
     const filled = await fillContactForm(page, config);
@@ -129,10 +128,17 @@ try {
     }
 
     if (filled) {
-      await submitForm(page, config);
-      log.info('フォーム送信後、5秒待機します...');
-      await page.waitForTimeout(5000);
-      log.info(`処理が完了しました。最終的なURL: ${page.url()}`);
+      try {
+        await submitForm(page, config);
+        log.info('フォーム送信後、5秒待機します...');
+        await page.waitForTimeout(5000);
+        log.info(`処理が完了しました。最終的なURL: ${page.url()}`);
+      } catch (e) {
+        log.error(`送信ボタンのクリックに失敗しました: ${e.message}`);
+        const screenshotPath = path.join(__dirname, 'logs', 'click_failure.png');
+        await page.screenshot({ path: screenshotPath });
+        log.error(`失敗時のスクリーンショットを保存しました: ${screenshotPath}`);
+      }
     } else {
       log.error('フォームに項目を一つも入力できませんでした。処理を中断します。');
     }
