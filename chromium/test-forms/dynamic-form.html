@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>動的フォームテスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .step-indicator .step-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #e9ecef;
+            margin: 0 2px;
+        }
+        .step-indicator .step-item.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>お問い合わせフォーム（動的生成版）</h1>
+        
+        <!-- ローディング画面 -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>フォームを読み込み中...</p>
+        </div>
+
+        <!-- ステップインジケーター -->
+        <div id="stepIndicator" class="step-indicator hidden">
+            <div class="step-item active" data-step="1">基本情報</div>
+            <div class="step-item" data-step="2">詳細情報</div>
+            <div class="step-item" data-step="3">確認</div>
+        </div>
+
+        <!-- 動的生成されるフォーム -->
+        <form id="dynamicForm" class="hidden">
+            <!-- Step 1: 基本情報 -->
+            <div class="step active" data-step="1">
+                <!-- この部分は JavaScript で動的に生成される -->
+            </div>
+
+            <!-- Step 2: 詳細情報 -->
+            <div class="step" data-step="2">
+                <!-- この部分は JavaScript で動的に生成される -->
+            </div>
+
+            <!-- Step 3: 確認 -->
+            <div class="step" data-step="3">
+                <!-- この部分は JavaScript で動的に生成される -->
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const formData = {};
+
+        // 遅延読み込みのシミュレーション
+        function simulateLoading() {
+            return new Promise(resolve => {
+                setTimeout(resolve, 3000); // 3秒の遅延
+            });
+        }
+
+        // フォーム要素を動的生成
+        function createFormElements() {
+            const step1 = document.querySelector('[data-step="1"]');
+            const step2 = document.querySelector('[data-step="2"]');
+            const step3 = document.querySelector('[data-step="3"]');
+
+            // Step 1: 基本情報
+            step1.innerHTML = `
+                <div class="form-group">
+                    <label for="company_name_dynamic">会社名</label>
+                    <input type="text" id="company_name_dynamic" name="company_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="contact_person">担当者氏名</label>
+                    <input type="text" id="contact_person" name="contact_name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="email_dynamic">メールアドレス</label>
+                    <input type="email" id="email_dynamic" name="email" class="form-control" required>
+                </div>
+                <button type="button" class="btn" onclick="nextStep()">次へ</button>
+            `;
+
+            // Step 2: 詳細情報（さらに遅延して生成）
+            setTimeout(() => {
+                step2.innerHTML = `
+                    <div class="form-group">
+                        <label for="phone_dynamic">電話番号</label>
+                        <input type="tel" id="phone_dynamic" name="phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="industry_dynamic">業界</label>
+                        <select id="industry_dynamic" name="industry" class="form-control">
+                            <option value="">選択してください</option>
+                            <option value="IT・ソフトウェア">IT・ソフトウェア</option>
+                            <option value="製造業">製造業</option>
+                            <option value="サービス業">サービス業</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message_dynamic">お問い合わせ内容</label>
+                        <textarea id="message_dynamic" name="message" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <button type="button" class="btn" onclick="prevStep()">戻る</button>
+                    <button type="button" class="btn" onclick="nextStep()">確認へ</button>
+                `;
+            }, 1000);
+
+            // Step 3: 確認画面
+            step3.innerHTML = `
+                <div id="confirmationContent">
+                    <!-- 確認内容は nextStep() で動的生成 -->
+                </div>
+                <button type="button" class="btn" onclick="prevStep()">戻る</button>
+                <button type="submit" class="btn">送信する</button>
+            `;
+        }
+
+        function nextStep() {
+            // 現在のステップのデータを保存
+            const currentStepElement = document.querySelector(`[data-step="${currentStep}"]`);
+            const inputs = currentStepElement.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    formData[input.name] = input.checked;
+                } else {
+                    formData[input.name] = input.value;
+                }
+            });
+
+            if (currentStep < 3) {
+                // 次のステップへ
+                document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+                document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep++;
+                
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+                document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('active');
+
+                // 確認画面の場合は内容を生成
+                if (currentStep === 3) {
+                    generateConfirmation();
+                }
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.querySelector(`[data-step="${currentStep}"]`).classList.remove('active');
+                document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.remove('active');
+                
+                currentStep--;
+                
+                document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+                document.querySelector(`.step-item[data-step="${currentStep}"]`).classList.add('active');
+            }
+        }
+
+        function generateConfirmation() {
+            const confirmationContent = document.getElementById('confirmationContent');
+            let html = '<h3>入力内容の確認</h3>';
+            
+            for (const [key, value] of Object.entries(formData)) {
+                if (value) {
+                    html += `<p><strong>${getFieldLabel(key)}:</strong> ${value}</p>`;
+                }
+            }
+            
+            confirmationContent.innerHTML = html;
+        }
+
+        function getFieldLabel(fieldName) {
+            const labels = {
+                'company_name': '会社名',
+                'contact_name': '担当者氏名',
+                'email': 'メールアドレス',
+                'phone': '電話番号',
+                'industry': '業界',
+                'message': 'お問い合わせ内容'
+            };
+            return labels[fieldName] || fieldName;
+        }
+
+        // ページ読み込み時の処理
+        window.addEventListener('load', async () => {
+            console.log('ページ読み込み開始');
+            
+            // ローディングシミュレーション
+            await simulateLoading();
+            
+            console.log('フォーム生成開始');
+            
+            // ローディング画面を隠してフォームを表示
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('stepIndicator').classList.remove('hidden');
+            document.getElementById('dynamicForm').classList.remove('hidden');
+            
+            // フォーム要素を動的生成
+            createFormElements();
+            
+            console.log('フォーム生成完了');
+        });
+
+        // フォーム送信処理
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOMが完全に読み込まれてからイベントリスナーを追加
+            setTimeout(() => {
+                const form = document.getElementById('dynamicForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        // 最終ステップのデータも保存
+                        nextStep();
+                        
+                        console.log('フォームデータ:', formData);
+                        alert('お問い合わせを受け付けました（テスト）');
+                    });
+                }
+            }, 4000); // フォーム生成後に設定
+        });
+
+        // MutationObserver で動的要素の追加を監視（テスト用）
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    console.log('DOM要素が追加されました:', mutation.addedNodes);
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    </script>
+</body>
+</html>

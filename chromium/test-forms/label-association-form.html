@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ラベル関連付けテストフォーム</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .form-wrapper {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+        }
+        
+        /* パターン1: 標準的なlabel for属性 */
+        .pattern1 .form-group {
+            margin-bottom: 25px;
+        }
+        .pattern1 label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        /* パターン2: ラベル内にinputを含む */
+        .pattern2 label {
+            display: block;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .pattern2 label .label-text {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        /* パターン3: 近接する要素での関連付け */
+        .pattern3 .field-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .pattern3 .field-label {
+            min-width: 150px;
+            font-weight: 600;
+            margin-right: 15px;
+            color: #444;
+        }
+        
+        /* パターン4: カスタムdata属性 */
+        .pattern4 .custom-field {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .pattern4 .floating-label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            padding: 0 5px;
+            color: #666;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+        .pattern4 input:focus + .floating-label,
+        .pattern4 input:not(:placeholder-shown) + .floating-label {
+            top: 0;
+            font-size: 12px;
+            color: #007bff;
+        }
+        
+        /* パターン5: Grid/Flexboxレイアウト */
+        .pattern5 .grid-form {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .pattern5 .grid-label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        /* 共通スタイル */
+        input[type="text"], input[type="email"], input[type="tel"], 
+        textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        .section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .submit-button {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: transform 0.2s;
+        }
+        .submit-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-wrapper">
+        <h1>ラベル関連付けテストフォーム</h1>
+        <form id="labelTestForm" action="#" method="POST">
+            
+            <!-- パターン1: 標準的なlabel for属性 -->
+            <div class="section pattern1">
+                <h2>パターン1: 標準的なlabel for属性</h2>
+                <div class="form-group">
+                    <label for="standard_company">会社名<span class="required">*</span></label>
+                    <input type="text" id="standard_company" name="company_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="standard_contact">お名前・担当者氏名<span class="required">*</span></label>
+                    <input type="text" id="standard_contact" name="contact_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="standard_email">Eメールアドレス<span class="required">*</span></label>
+                    <input type="email" id="standard_email" name="email" required>
+                </div>
+            </div>
+
+            <!-- パターン2: ラベル内にinputを含む -->
+            <div class="section pattern2">
+                <h2>パターン2: ラベル内包型</h2>
+                <label>
+                    <span class="label-text">電話番号・TEL</span>
+                    <input type="tel" name="phone" placeholder="03-1234-5678">
+                </label>
+                <label>
+                    <span class="label-text">ご住所・都道府県</span>
+                    <select name="prefecture">
+                        <option value="">選択してください</option>
+                        <option value="東京都">東京都</option>
+                        <option value="大阪府">大阪府</option>
+                        <option value="愛知県">愛知県</option>
+                        <option value="神奈川県">神奈川県</option>
+                    </select>
+                </label>
+                <label>
+                    <span class="label-text">ご相談内容・お問い合わせ詳細</span>
+                    <textarea name="message" rows="4" placeholder="具体的なご相談内容をお聞かせください"></textarea>
+                </label>
+            </div>
+
+            <!-- パターン3: 近接する要素での関連付け -->
+            <div class="section pattern3">
+                <h2>パターン3: 近接要素関連付け</h2>
+                <div class="field-container">
+                    <span class="field-label">業界・業種:</span>
+                    <select name="industry">
+                        <option value="">選択してください</option>
+                        <option value="IT・ソフトウェア">IT・ソフトウェア</option>
+                        <option value="製造業">製造業</option>
+                        <option value="サービス業">サービス業</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="field-container">
+                    <span class="field-label">ご予算:</span>
+                    <select name="budget">
+                        <option value="">選択してください</option>
+                        <option value="100万円未満">100万円未満</option>
+                        <option value="100万円〜500万円">100万円〜500万円</option>
+                        <option value="500万円以上">500万円以上</option>
+                    </select>
+                </div>
+                <div class="field-container">
+                    <span class="field-label">導入時期:</span>
+                    <select name="timeline">
+                        <option value="">選択してください</option>
+                        <option value="1ヶ月以内">1ヶ月以内</option>
+                        <option value="3ヶ月以内">3ヶ月以内</option>
+                        <option value="6ヶ月以内">6ヶ月以内</option>
+                        <option value="未定">未定</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- パターン4: カスタムdata属性とフローティングラベル -->
+            <div class="section pattern4">
+                <h2>パターン4: フローティングラベル</h2>
+                <div class="custom-field">
+                    <input type="text" name="department" placeholder=" " data-label="部署名">
+                    <span class="floating-label">部署名・所属</span>
+                </div>
+                <div class="custom-field">
+                    <input type="text" name="position" placeholder=" " data-label="役職">
+                    <span class="floating-label">役職・お役職</span>
+                </div>
+                <div class="custom-field">
+                    <input type="text" name="website" placeholder=" " data-label="ウェブサイト">
+                    <span class="floating-label">ウェブサイトURL・ホームページ</span>
+                </div>
+            </div>
+
+            <!-- パターン5: Grid/Flexboxレイアウト -->
+            <div class="section pattern5">
+                <h2>パターン5: Grid/Flexレイアウト</h2>
+                <div class="grid-form">
+                    <span class="grid-label">従業員数:</span>
+                    <select name="employee_count">
+                        <option value="">選択してください</option>
+                        <option value="1-10名">1-10名</option>
+                        <option value="11-50名">11-50名</option>
+                        <option value="51-200名">51-200名</option>
+                        <option value="201名以上">201名以上</option>
+                    </select>
+                </div>
+                <div class="grid-form">
+                    <span class="grid-label">設立年:</span>
+                    <input type="text" name="established_year" placeholder="例: 2020">
+                </div>
+                <div class="grid-form">
+                    <span class="grid-label">事業内容:</span>
+                    <textarea name="business_description" rows="3" placeholder="簡潔にご記載ください"></textarea>
+                </div>
+            </div>
+
+            <!-- 複雑な構造のチェックボックス/ラジオボタン -->
+            <div class="section">
+                <h2>オプション設定</h2>
+                <div style="margin-bottom: 20px;">
+                    <strong>ご希望のサービス（複数選択可）:</strong>
+                    <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 15px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="services[]" value="consulting">
+                            <span>コンサルティング</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="services[]" value="development">
+                            <span>システム開発</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox" name="services[]" value="maintenance">
+                            <span>保守・運用</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <strong>連絡希望時間帯:</strong>
+                    <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 15px;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="contact_time" value="morning">
+                            <span>午前中</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="contact_time" value="afternoon">
+                            <span>午後</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="contact_time" value="evening">
+                            <span>夕方以降</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" name="newsletter" value="true">
+                        <span>メールマガジン・お知らせの配信を希望する</span>
+                    </label>
+                </div>
+                
+                <div>
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" name="privacy_agreement" value="true" required>
+                        <span>個人情報取扱方針・プライバシーポリシーに同意する<span class="required">*</span></span>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-button">お問い合わせを送信</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('labelTestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // フォームデータを収集
+            const formData = new FormData(this);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (key.endsWith('[]')) {
+                    const realKey = key.slice(0, -2);
+                    if (!data[realKey]) data[realKey] = [];
+                    data[realKey].push(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            console.log('収集されたフォームデータ:', data);
+            alert('フォームが送信されました（テスト）\n\n送信データ:\n' + JSON.stringify(data, null, 2));
+        });
+    </script>
+</body>
+</html>

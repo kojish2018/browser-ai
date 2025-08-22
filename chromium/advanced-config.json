@@ -1,0 +1,256 @@
+{
+  "formData": {
+    "company_name": "株式会社AI oxytocin",
+    "contact_name": "山田 太郎", 
+    "email": "aioxytocin@gmail.com",
+    "phone": "03-1234-5678",
+    "message": "AIソリューションについてお問い合わせさせていただきます。",
+    "prefecture": "東京都",
+    "industry": "IT・ソフトウェア",
+    "budget": "100万円〜500万円",
+    "timeline": "3ヶ月以内",
+    "newsletter": true,
+    "privacy_agreement": true
+  },
+  "fieldMappings": {
+    "company_name": {
+      "keywords": [
+        "corp_name", "company_name", "corporate_name", "organization_name", "business_name", "firm_name",
+        "法人名", "企業名", "会社名", "団体名", "組織名", "社名", "商号", "事業者名",
+        "株式会社", "有限会社", "合同会社", "団体", "法人",
+        "corp", "corporate", "organization", "business", "company"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 1,
+      "regex": ["/company.*name/i", "/corp.*name/i", "/会社.*名/", "/法人.*名/", "/企業.*名/"],
+      "fallback": ["organization", "corp", "business", "firm"],
+      "required": true
+    },
+    "contact_name": {
+      "keywords": [
+        "representative_name", "contact_name", "person_name", "担当者氏名", "代表者氏名", "責任者氏名",
+        "担当者", "代表者", "責任者", "連絡担当者", "person", "contact", "representative",
+        "your_name", "customer_name", "client_name", "連絡者", "申込者", "user_name", "applicant_name", "full_name",
+        "氏名", "お名前", "姓名", "フルネーム", "名前", "person_in_charge", "rep_name", "contact_person", "name"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 1,
+      "regex": ["/.*name/i", "/氏名/", "/名前/", "/担当/", "/代表/", "/representative.*/i"],
+      "fallback": ["person", "user", "customer", "applicant"],
+      "required": true
+    },
+    "email": {
+      "keywords": [
+        "email", "mail", "メール", "アドレス", "e-mail", "e_mail", "メルアド", "address", "electronic_mail",
+        "email_address", "mail_address", "contact_email", "your_email", "customer_email", "client_email",
+        "business_email", "work_email", "office_email", "company_email", "user_email", "login_email"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 1,
+      "regex": ["/email/i", "/mail/i", "/メール/", "/アドレス/", "/@/"],
+      "fallback": ["contact", "user_id"],
+      "required": true,
+      "validation": "email"
+    },
+    "phone": {
+      "keywords": [
+        "phone", "tel", "電話", "TEL", "連絡先", "携帯", "mobile", "cell", "telephone", "cellular",
+        "phone_number", "tel_number", "mobile_number", "cell_number", "contact_phone", "telephone_number",
+        "business_phone", "office_phone", "work_phone", "company_phone", "携帯電話", "固定電話", "番号"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 2,
+      "regex": ["/phone/i", "/tel/i", "/mobile/i", "/cell/i", "/電話/", "/携帯/", "/番号/"],
+      "fallback": ["contact", "number"]
+    },
+    "message": {
+      "keywords": [
+        "message", "inquiry", "content", "お問い合わせ", "内容", "詳細", "備考", "comment", "description",
+        "inquiry_details", "message_content", "consultation", "request", "details", "remarks", "note",
+        "問い合わせ内容", "お問合せ", "ご相談", "ご要望", "相談内容", "質問", "question", "inquiry_content"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 1,
+      "regex": ["/message/i", "/inquiry/i", "/content/i", "/details/i", "/お問い?合わせ/", "/内容/", "/詳細/"],
+      "fallback": ["comment", "description", "note"],
+      "fieldType": ["textarea", "text"]
+    },
+    "prefecture": {
+      "keywords": [
+        "prefecture", "都道府県", "住所", "地域", "県", "道", "府", "都", "region", "area", "location", "address",
+        "prefecture_select", "region_select", "area_select", "location_select", "state", "province"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 3,
+      "regex": ["/prefecture/i", "/region/i", "/都道府県/", "/住所/", "/地域/"],
+      "fallback": ["location", "address", "area"],
+      "fieldType": ["select"]
+    },
+    "industry": {
+      "keywords": [
+        "industry", "業界", "業種", "職種", "事業", "sector", "field", "business_type", "business_category",
+        "industry_type", "work_field", "profession", "occupation", "trade", "business_sector"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 3,
+      "regex": ["/industry/i", "/business.*type/i", "/sector/i", "/業界/", "/業種/", "/職種/"],
+      "fallback": ["business", "work", "profession"],
+      "fieldType": ["select"]
+    },
+    "budget": {
+      "keywords": [
+        "budget", "予算", "金額", "費用", "価格", "cost", "price", "amount", "fee", "investment",
+        "budget_range", "cost_range", "price_range", "amount_range", "investment_amount", "投資額", "ご予算"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 3,
+      "regex": ["/budget/i", "/cost/i", "/price/i", "/amount/i", "/予算/", "/金額/", "/費用/", "/円/"],
+      "fallback": ["cost", "price", "amount"],
+      "fieldType": ["select", "text"]
+    },
+    "timeline": {
+      "keywords": [
+        "timeline", "期間", "時期", "導入時期", "schedule", "period", "duration", "timeframe", "deadline",
+        "timeline_select", "schedule_select", "period_select", "start_date", "end_date", "completion_time",
+        "開始時期", "完了時期", "納期", "希望時期", "導入希望時期"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 3,
+      "regex": ["/timeline/i", "/schedule/i", "/period/i", "/time/i", "/時期/", "/期間/", "/導入/"],
+      "fallback": ["schedule", "time", "period"],
+      "fieldType": ["select"]
+    },
+    "newsletter": {
+      "keywords": [
+        "newsletter", "メルマガ", "情報配信", "お知らせ", "mailing_list", "email_updates", "notifications",
+        "updates", "配信希望", "subscription", "newsletter_subscription", "mailing", "email_newsletter",
+        "ニュースレター", "メール配信", "情報", "更新情報"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 4,
+      "regex": ["/newsletter/i", "/mailing/i", "/updates/i", "/メルマガ/", "/配信/", "/お知らせ/"],
+      "fallback": ["subscription", "updates", "notification"],
+      "fieldType": ["checkbox"]
+    },
+    "privacy_agreement": {
+      "keywords": [
+        "privacy", "個人情報", "プライバシー", "同意", "規約", "agreement", "consent", "terms", "policy",
+        "privacy_policy", "privacy_agreement", "terms_agreement", "personal_info", "privacy_consent",
+        "個人情報保護", "プライバシーポリシー", "利用規約", "取扱方針", "個人情報同意", "規約同意"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "priority": 1,
+      "regex": ["/privacy/i", "/agreement/i", "/consent/i", "/terms/i", "/policy/i", "/同意/", "/規約/", "/個人情報/"],
+      "fallback": ["agreement", "consent", "terms"],
+      "fieldType": ["checkbox"],
+      "required": true
+    }
+  },
+  "submitKeywords": [
+    {
+      "text": "送信",
+      "priority": 1,
+      "selectors": ["button", "input[type=submit]", "a"]
+    },
+    {
+      "text": "申し込む", 
+      "priority": 1,
+      "selectors": ["button", "a"]
+    },
+    {
+      "text": "確認",
+      "priority": 2,
+      "selectors": ["button", "input[type=submit]"]
+    },
+    {
+      "text": "Submit",
+      "priority": 1,
+      "selectors": ["button", "input[type=submit]"]
+    },
+    {
+      "text": "Send",
+      "priority": 1,
+      "selectors": ["button", "input[type=submit]"]
+    },
+    {
+      "text": "登録",
+      "priority": 2,
+      "selectors": ["button", "input[type=submit]"]
+    },
+    {
+      "text": "次へ",
+      "priority": 3,
+      "selectors": ["button", "a"]
+    }
+  ],
+  "contactPageKeywords": ["お問い合わせ", "コンタクト", "contact", "inquiry", "問い合わせ", "相談"],
+  "requiredFields": ["contact_name", "email"],
+  "detectionSettings": {
+    "defaultStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+    "maxRetries": 3,
+    "retryDelay": 2000,
+    "waitForDynamicContent": true,
+    "dynamicContentTimeout": 10000
+  },
+  "autoFillUnknownFields": true,
+  "autoFieldMapping": {
+    "enabled": true,
+    "confidenceThreshold": 10,
+    "maxAutoFields": 20,
+    "learnFromResults": true,
+    "skipFieldTypes": ["hidden", "submit", "button"]
+  },
+  "userAgents": [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36", 
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/119.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15"
+  ],
+  "proxy": {
+    "enabled": false,
+    "server": "http://your_proxy_server:port",
+    "username": "your_username", 
+    "password": "your_password"
+  },
+  "logFile": "./logs/app.log",
+  "behaviorSettings": {
+    "humanLikeDelay": {
+      "min": 300,
+      "max": 1500
+    },
+    "typingSpeed": {
+      "min": 50,
+      "max": 200
+    },
+    "scrollDelay": 1000,
+    "beforeSubmitDelay": 2000,
+    "randomizeUserAgent": true,
+    "avoidDetection": true
+  },
+  "formAnalysis": {
+    "enabled": true,
+    "analyzeOnPageLoad": true,
+    "logFormStructure": true,
+    "detectRequiredFields": true,
+    "handleCaptcha": true
+  },
+  "errorHandling": {
+    "maxRetries": 3,
+    "screenshotOnError": true,
+    "continueOnFieldError": true,
+    "skipOptionalFields": true
+  },
+  "customSelectors": {
+    "reCaptcha": [
+      "iframe[title=\"reCAPTCHA\"]",
+      ".g-recaptcha",
+      "[data-callback*=\"recaptcha\"]"
+    ],
+    "loadingIndicators": [
+      ".loading",
+      ".spinner",
+      "[data-loading=\"true\"]"
+    ]
+  }
+}
