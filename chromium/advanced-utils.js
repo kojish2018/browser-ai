@@ -1,9 +1,9 @@
 const log = require('./log');
 const {
-  findFieldBySemantic,
+  // findFieldBySemantic, // セマンティック解析無効化のためコメントアウト
   determineCheckboxRadioValue,
-  analyzePageFieldsSemantics,
-  getSemanticCategory
+  // analyzePageFieldsSemantics, // セマンティック解析無効化のためコメントアウト
+  // getSemanticCategory // セマンティック解析無効化のためコメントアウト
 } = require('./semantic-field-mapper');
 const {
   autoDetectAndMapFields,
@@ -177,7 +177,7 @@ async function findContactPage(page, config) {
 /**
  * 高度なフィールド検出システム（マルチレイヤー戦略）
  */
-async function findFieldAdvanced(page, keywords, fieldNameForLog, config = {}) {
+async function findFieldAdvanced(page, keywords, fieldNameForLog, config = {}, usedElements) {
   const strategies = config.detectionStrategies || [
     DETECTION_STRATEGIES.DIRECT_ATTRIBUTES,
     DETECTION_STRATEGIES.STRUCTURAL_RELATION,
@@ -189,10 +189,10 @@ async function findFieldAdvanced(page, keywords, fieldNameForLog, config = {}) {
     
     switch (strategy) {
       case DETECTION_STRATEGIES.DIRECT_ATTRIBUTES:
-        field = await findFieldByDirectAttributes(page, keywords);
+        field = await findFieldByDirectAttributes(page, keywords, usedElements);
         break;
       case DETECTION_STRATEGIES.STRUCTURAL_RELATION:
-        field = await findFieldByStructuralRelation(page, keywords);
+        field = await findFieldByStructuralRelation(page, keywords, usedElements);
         break;
       case DETECTION_STRATEGIES.SEMANTIC_ANALYSIS:
         field = await findFieldBySemanticAnalysis(page, keywords, fieldNameForLog);
@@ -203,6 +203,26 @@ async function findFieldAdvanced(page, keywords, fieldNameForLog, config = {}) {
     }
 
     if (field) {
+      // Element Uniqueness Check: 使用済み要素でないことを確認
+      if (usedElements) {
+        try {
+          const elementId = await field.evaluate(el => {
+            const name = el.name || '';
+            const id = el.id || '';
+            const tagName = el.tagName || '';
+            const className = el.className || '';
+            return `${tagName}:${name}:${id}:${className}`.toLowerCase();
+          });
+          
+          if (usedElements.has(elementId)) {
+            log.info(`[UNIQUENESS] Skipping already used element: ${elementId} for field: ${fieldNameForLog}`);
+            continue; // この要素は既に使用済みなので次の戦略へ
+          }
+        } catch (e) {
+          log.warn(`Failed to check element uniqueness for ${fieldNameForLog}: ${e.message}`);
+        }
+      }
+      
       log.info(`Field found using ${strategy} strategy: ${fieldNameForLog}`);
       return field;
     }
@@ -215,7 +235,7 @@ async function findFieldAdvanced(page, keywords, fieldNameForLog, config = {}) {
 /**
  * 戦略1: 直接属性マッチング（改良版）
  */
-async function findFieldByDirectAttributes(page, keywords) {
+async function findFieldByDirectAttributes(page, keywords, usedElements) {
   const allFieldTypes = Object.values(FIELD_TYPES).flat();
   
   for (const keyword of keywords) {
@@ -236,6 +256,16 @@ async function findFieldByDirectAttributes(page, keywords) {
         try {
           const field = page.locator(selector).first();
           if (await field.count() > 0 && await field.isVisible()) {
+            // デバッグ情報を追加
+            const elementInfo = await field.evaluate(el => ({
+              tagName: el.tagName,
+              type: el.type || 'N/A',
+              name: el.name || 'N/A',
+              id: el.id || 'N/A',
+              className: el.className || 'N/A',
+              placeholder: el.placeholder || 'N/A'
+            }));
+            log.info(`[DEBUG] Field detected - Keyword: "${keyword}", Selector: ${selector}, Element: ${JSON.stringify(elementInfo)}`);
             return field;
           }
         } catch (e) {
@@ -250,7 +280,7 @@ async function findFieldByDirectAttributes(page, keywords) {
 /**
  * 戦略2: 構造的関連付け
  */
-async function findFieldByStructuralRelation(page, keywords) {
+async function findFieldByStructuralRelation(page, keywords, usedElements) {
   const allFieldTypes = Object.values(FIELD_TYPES).flat();
   
   for (const keyword of keywords) {
@@ -274,6 +304,16 @@ async function findFieldByStructuralRelation(page, keywords) {
           for (const fieldType of allFieldTypes) {
             const field = page.locator(`${fieldType}#${forAttr}`);
             if (await field.count() > 0 && await field.isVisible()) {
+              // デバッグ情報を追加
+              const elementInfo = await field.evaluate(el => ({
+                tagName: el.tagName,
+                type: el.type || 'N/A',
+                name: el.name || 'N/A',
+                id: el.id || 'N/A',
+                className: el.className || 'N/A',
+                placeholder: el.placeholder || 'N/A'
+              }));
+              log.info(`[DEBUG] Structural field detected - Label keyword: "${keyword}", Label for: "${forAttr}", Element: ${JSON.stringify(elementInfo)}`);
               return field;
             }
           }
@@ -284,6 +324,16 @@ async function findFieldByStructuralRelation(page, keywords) {
         for (const fieldType of allFieldTypes) {
           const siblingField = parent.locator(fieldType).first();
           if (await siblingField.count() > 0 && await siblingField.isVisible()) {
+            // デバッグ情報を追加
+            const elementInfo = await siblingField.evaluate(el => ({
+              tagName: el.tagName,
+              type: el.type || 'N/A',
+              name: el.name || 'N/A',
+              id: el.id || 'N/A',
+              className: el.className || 'N/A',
+              placeholder: el.placeholder || 'N/A'
+            }));
+            log.info(`[DEBUG] Sibling field detected - Label keyword: "${keyword}", Element: ${JSON.stringify(elementInfo)}`);
             return siblingField;
           }
         }
@@ -298,13 +348,15 @@ async function findFieldByStructuralRelation(page, keywords) {
  */
 async function findFieldBySemanticAnalysis(page, keywords, fieldNameForLog) {
   try {
-    // セマンティック検出を使用
-    const field = await findFieldBySemantic(page, fieldNameForLog, keywords);
+    // セマンティック解析を無効化（重複処理による上書き問題を回避）
+    return null;
     
-    if (field) {
-      log.info(`Semantic analysis found field for ${fieldNameForLog}`);
-      return field;
-    }
+    // 無効化されたコード:
+    // const field = await findFieldBySemantic(page, fieldNameForLog, keywords);
+    // if (field) {
+    //   log.info(`Semantic analysis found field for ${fieldNameForLog}`);
+    //   return field;
+    // }
 
     // フォールバック: より広範囲な周辺テキスト解析
     const contextualField = await findFieldByContextualAnalysis(page, keywords);
@@ -422,7 +474,9 @@ async function fillContactFormAdvanced(page, config) {
   await analyzeFormStructure(page);
 
   // ページ全体のセマンティック解析を事前実行
-  const semanticFields = await analyzePageFieldsSemantics(page);
+  // 注意: 重複処理による上書き問題を回避するため、セマンティック解析を無効化
+  // const semanticFields = await analyzePageFieldsSemantics(page);
+  const semanticFields = [];
 
   // 動的コンテンツの待機
   if (config.waitForDynamicContent) {
@@ -437,6 +491,9 @@ async function fillContactFormAdvanced(page, config) {
   // PHASE 1: 設定済みフィールドの処理
   // ========================================
   log.info('Phase 1: Processing configured fields...');
+  
+  // Element Uniqueness System: 使用済みHTML要素を追跡（2025年業界標準）
+  const usedElements = new Set();
 
   // 必須フィールドを最優先で処理
   const fieldEntries = Object.entries(config.fieldMappings || {});
@@ -461,25 +518,41 @@ async function fillContactFormAdvanced(page, config) {
     const keywords = Array.isArray(fieldConfig) ? fieldConfig : fieldConfig.keywords || fieldConfig;
     const fieldSettings = typeof fieldConfig === 'object' && !Array.isArray(fieldConfig) ? fieldConfig : {};
 
-    // 多層フォールバック戦略でフィールドを検索
-    const field = await findFieldWithFallback(page, keywords, key, fieldSettings, semanticFields);
+    // 多層フォールバック戦略でフィールドを検索（Element Uniqueness適用）
+    const field = await findFieldWithFallback(page, keywords, key, fieldSettings, semanticFields, usedElements);
     
     if (field) {
       try {
         await humanLikeScroll(field);
         await humanLikeDelay(300, 800);
         
-        // セマンティック情報を取得
-        const semanticFieldData = semanticFields.find(sf => {
-          const semanticResult = getSemanticCategory(sf, sf.labelText, sf.name, sf.placeholder);
-          return semanticResult.category !== 'UNKNOWN' && semanticResult.score > 10;
-        });
+        // セマンティック情報を無効化（重複処理による上書き問題を回避）
+        // const semanticFieldData = semanticFields.find(sf => {
+        //   const semanticResult = getSemanticCategory(sf, sf.labelText, sf.name, sf.placeholder);
+        //   return semanticResult.category !== 'UNKNOWN' && semanticResult.score > 10;
+        // });
         
-        // セマンティック情報を渡してより適切な処理
-        await humanLikeTyping(field, value, page, key, semanticFieldData);
+        // セマンティック情報なしで処理
+        await humanLikeTyping(field, value, page, key, null);
         
         log.info(`Field filled: "${key}" (value: ${typeof value === 'boolean' ? value : `"${value}"`})`);
         configFilledCount++;
+        
+        // Element Uniqueness: 使用済み要素として記録
+        try {
+          const elementId = await field.evaluate(el => {
+            // ユニークな要素識別子を生成（name, id, xpath組み合わせ）
+            const name = el.name || '';
+            const id = el.id || '';
+            const tagName = el.tagName || '';
+            const className = el.className || '';
+            return `${tagName}:${name}:${id}:${className}`.toLowerCase();
+          });
+          usedElements.add(elementId);
+          log.info(`[UNIQUENESS] Element marked as used: ${elementId}`);
+        } catch (e) {
+          log.warn(`Failed to record element uniqueness for ${key}: ${e.message}`);
+        }
         
       } catch (e) {
         log.error(`Failed to fill field "${key}": ${e.message}`);
@@ -542,15 +615,15 @@ async function fillContactFormAdvanced(page, config) {
 /**
  * 多層フォールバック戦略でフィールドを検索
  */
-async function findFieldWithFallback(page, keywords, fieldKey, fieldSettings, semanticFields) {
+async function findFieldWithFallback(page, keywords, fieldKey, fieldSettings, semanticFields, usedElements) {
   // 戦略1: 通常の高度検索
-  let field = await findFieldAdvanced(page, keywords, fieldKey, fieldSettings);
+  let field = await findFieldAdvanced(page, keywords, fieldKey, fieldSettings, usedElements);
   if (field) return field;
 
   // 戦略2: より寛容なキーワード検索
   if (fieldSettings.fallback) {
     for (const fallbackKeyword of fieldSettings.fallback) {
-      field = await findFieldAdvanced(page, [fallbackKeyword], fieldKey, fieldSettings);
+      field = await findFieldAdvanced(page, [fallbackKeyword], fieldKey, fieldSettings, usedElements);
       if (field) {
         log.info(`Field found using fallback keyword: ${fallbackKeyword}`);
         return field;
@@ -574,6 +647,26 @@ async function findFieldWithFallback(page, keywords, fieldKey, fieldSettings, se
           
           if (regexPattern.test(name) || regexPattern.test(id) || regexPattern.test(placeholder)) {
             if (await element.isVisible()) {
+              // Element Uniqueness Check: 使用済み要素でないことを確認
+              if (usedElements) {
+                try {
+                  const elementId = await element.evaluate(el => {
+                    const name = el.name || '';
+                    const id = el.id || '';
+                    const tagName = el.tagName || '';
+                    const className = el.className || '';
+                    return `${tagName}:${name}:${id}:${className}`.toLowerCase();
+                  });
+                  
+                  if (usedElements.has(elementId)) {
+                    log.info(`[UNIQUENESS] Skipping already used element: ${elementId} (regex pattern: ${pattern})`);
+                    continue; // この要素は既に使用済みなので次の要素へ
+                  }
+                } catch (e) {
+                  log.warn(`Failed to check element uniqueness for regex pattern ${pattern}: ${e.message}`);
+                }
+              }
+              
               log.info(`Field found using regex pattern: ${pattern}`);
               return element;
             }
@@ -600,25 +693,26 @@ async function findFieldWithFallback(page, keywords, fieldKey, fieldSettings, se
     'newsletter': 'NEWSLETTER'
   };
 
-  const targetCategory = targetMapping[fieldKey];
-  if (targetCategory) {
-    const semanticMatches = semanticFields
-      .filter(sf => sf.semanticCategory === targetCategory && sf.visible && sf.semanticScore > 10)
-      .sort((a, b) => b.semanticScore - a.semanticScore);
+  // セマンティック推論を無効化（重複処理による上書き問題を回避）
+  // const targetCategory = targetMapping[fieldKey];
+  // if (targetCategory) {
+  //   const semanticMatches = semanticFields
+  //     .filter(sf => sf.semanticCategory === targetCategory && sf.visible && sf.semanticScore > 10)
+  //     .sort((a, b) => b.semanticScore - a.semanticScore);
 
-    if (semanticMatches.length > 0) {
-      const match = semanticMatches[0];
-      const selector = match.id ? `#${match.id}` : 
-                     match.name ? `[name="${match.name}"]` : 
-                     `${match.tagName}:nth-of-type(${match.index + 1})`;
+  //   if (semanticMatches.length > 0) {
+  //     const match = semanticMatches[0];
+  //     const selector = match.id ? `#${match.id}` : 
+  //                    match.name ? `[name="${match.name}"]` : 
+  //                    `${match.tagName}:nth-of-type(${match.index + 1})`;
       
-      field = page.locator(selector).first();
-      if (await field.isVisible().catch(() => false)) {
-        log.info(`Field found using semantic inference: ${match.name || match.id} (${targetCategory})`);
-        return field;
-      }
-    }
-  }
+  //     field = page.locator(selector).first();
+  //     if (await field.isVisible().catch(() => false)) {
+  //       log.info(`Field found using semantic inference: ${match.name || match.id} (${targetCategory})`);
+  //       return field;
+  //     }
+  //   }
+  // }
 
   // 戦略5: ブルートフォース近似検索
   const searchTerms = [fieldKey, ...keywords].filter(Boolean);

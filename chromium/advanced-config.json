@@ -20,7 +20,7 @@
         "株式会社", "有限会社", "合同会社", "団体", "法人",
         "corp", "corporate", "organization", "business", "company"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 1,
       "regex": ["/company.*name/i", "/corp.*name/i", "/会社.*名/", "/法人.*名/", "/企業.*名/"],
       "fallback": ["organization", "corp", "business", "firm"],
@@ -33,7 +33,7 @@
         "your_name", "customer_name", "client_name", "連絡者", "申込者", "user_name", "applicant_name", "full_name",
         "氏名", "お名前", "姓名", "フルネーム", "名前", "person_in_charge", "rep_name", "contact_person", "name"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 1,
       "regex": ["/.*name/i", "/氏名/", "/名前/", "/担当/", "/代表/", "/representative.*/i"],
       "fallback": ["person", "user", "customer", "applicant"],
@@ -45,7 +45,7 @@
         "email_address", "mail_address", "contact_email", "your_email", "customer_email", "client_email",
         "business_email", "work_email", "office_email", "company_email", "user_email", "login_email"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 1,
       "regex": ["/email/i", "/mail/i", "/メール/", "/アドレス/", "/@/"],
       "fallback": ["contact", "user_id"],
@@ -58,7 +58,7 @@
         "phone_number", "tel_number", "mobile_number", "cell_number", "contact_phone", "telephone_number",
         "business_phone", "office_phone", "work_phone", "company_phone", "携帯電話", "固定電話", "番号"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 2,
       "regex": ["/phone/i", "/tel/i", "/mobile/i", "/cell/i", "/電話/", "/携帯/", "/番号/"],
       "fallback": ["contact", "number"]
@@ -69,7 +69,7 @@
         "inquiry_details", "message_content", "consultation", "request", "details", "remarks", "note",
         "問い合わせ内容", "お問合せ", "ご相談", "ご要望", "相談内容", "質問", "question", "inquiry_content"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 1,
       "regex": ["/message/i", "/inquiry/i", "/content/i", "/details/i", "/お問い?合わせ/", "/内容/", "/詳細/"],
       "fallback": ["comment", "description", "note"],
@@ -80,7 +80,7 @@
         "prefecture", "都道府県", "住所", "地域", "県", "道", "府", "都", "region", "area", "location", "address",
         "prefecture_select", "region_select", "area_select", "location_select", "state", "province"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 3,
       "regex": ["/prefecture/i", "/region/i", "/都道府県/", "/住所/", "/地域/"],
       "fallback": ["location", "address", "area"],
@@ -91,7 +91,7 @@
         "industry", "業界", "業種", "職種", "事業", "sector", "field", "business_type", "business_category",
         "industry_type", "work_field", "profession", "occupation", "trade", "business_sector"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 3,
       "regex": ["/industry/i", "/business.*type/i", "/sector/i", "/業界/", "/業種/", "/職種/"],
       "fallback": ["business", "work", "profession"],
@@ -102,7 +102,7 @@
         "budget", "予算", "金額", "費用", "価格", "cost", "price", "amount", "fee", "investment",
         "budget_range", "cost_range", "price_range", "amount_range", "investment_amount", "投資額", "ご予算"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 3,
       "regex": ["/budget/i", "/cost/i", "/price/i", "/amount/i", "/予算/", "/金額/", "/費用/", "/円/"],
       "fallback": ["cost", "price", "amount"],
@@ -114,7 +114,7 @@
         "timeline_select", "schedule_select", "period_select", "start_date", "end_date", "completion_time",
         "開始時期", "完了時期", "納期", "希望時期", "導入希望時期"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 3,
       "regex": ["/timeline/i", "/schedule/i", "/period/i", "/time/i", "/時期/", "/期間/", "/導入/"],
       "fallback": ["schedule", "time", "period"],
@@ -126,7 +126,7 @@
         "updates", "配信希望", "subscription", "newsletter_subscription", "mailing", "email_newsletter",
         "ニュースレター", "メール配信", "情報", "更新情報"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 4,
       "regex": ["/newsletter/i", "/mailing/i", "/updates/i", "/メルマガ/", "/配信/", "/お知らせ/"],
       "fallback": ["subscription", "updates", "notification"],
@@ -138,7 +138,7 @@
         "privacy_policy", "privacy_agreement", "terms_agreement", "personal_info", "privacy_consent",
         "個人情報保護", "プライバシーポリシー", "利用規約", "取扱方針", "個人情報同意", "規約同意"
       ],
-      "detectionStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 1,
       "regex": ["/privacy/i", "/agreement/i", "/consent/i", "/terms/i", "/policy/i", "/同意/", "/規約/", "/個人情報/"],
       "fallback": ["agreement", "consent", "terms"],
@@ -186,13 +186,13 @@
   "contactPageKeywords": ["お問い合わせ", "コンタクト", "contact", "inquiry", "問い合わせ", "相談"],
   "requiredFields": ["contact_name", "email"],
   "detectionSettings": {
-    "defaultStrategies": ["direct_attributes", "structural_relation", "semantic_analysis"],
+    "defaultStrategies": ["direct_attributes", "structural_relation"],
     "maxRetries": 3,
     "retryDelay": 2000,
     "waitForDynamicContent": true,
     "dynamicContentTimeout": 10000
   },
-  "autoFillUnknownFields": true,
+  "autoFillUnknownFields": false,
   "autoFieldMapping": {
     "enabled": true,
     "confidenceThreshold": 10,

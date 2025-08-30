@@ -2,3 +2,5 @@ node_modules/
 logs/
 chromedriver/config.json
 chromium/config.json
+.serena/
+.claude/

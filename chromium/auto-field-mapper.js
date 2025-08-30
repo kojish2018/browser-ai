@@ -4,7 +4,7 @@
  */
 
 const log = require('./log');
-const { analyzePageFieldsSemantics, SEMANTIC_CATEGORIES } = require('./semantic-field-mapper');
+// const { analyzePageFieldsSemantics, SEMANTIC_CATEGORIES } = require('./semantic-field-mapper'); // セマンティック解析無効化のためコメントアウト
 const fs = require('fs');
 const path = require('path');
 
@@ -158,7 +158,9 @@ function generateValueForCategory(category, fieldData, config) {
 async function autoDetectAndMapFields(page, config) {
   log.info('Starting automatic field detection and mapping...');
   
-  const semanticFields = await analyzePageFieldsSemantics(page);
+  // セマンティック解析を無効化（重複処理による上書き問題を回避）
+  // const semanticFields = await analyzePageFieldsSemantics(page);
+  const semanticFields = [];
   const learningData = loadLearningData();
   const autoMappedFields = [];
   
