@@ -77,30 +77,52 @@ async function selectOption(selectField, value, fallbackOptions = []) {
   const allValues = [value, ...fallbackOptions].filter(Boolean);
   
   for (const currentValue of allValues) {
+    log.info(`[DEBUG] Trying to select option: ${currentValue}`);
+    
     try {
       // 値で選択を試す
-      await selectField.selectOption({ value: currentValue });
+      log.info(`[DEBUG] Attempting selection by value: ${currentValue}`);
+      await selectField.selectOption({ value: currentValue }, { timeout: 3000 });
       log.info(`Select option selected by value: ${currentValue}`);
       return true;
     } catch (e1) {
+      log.info(`[DEBUG] Selection by value failed: ${e1.message}`);
+      
       try {
         // ラベルで選択を試す
-        await selectField.selectOption({ label: currentValue });
+        log.info(`[DEBUG] Attempting selection by label: ${currentValue}`);
+        await selectField.selectOption({ label: currentValue }, { timeout: 3000 });
         log.info(`Select option selected by label: ${currentValue}`);
         return true;
       } catch (e2) {
+        log.info(`[DEBUG] Selection by label failed: ${e2.message}`);
+        
         try {
           // 部分一致で選択を試す
+          log.info(`[DEBUG] Starting partial match search for: ${currentValue}`);
+          const startTime = Date.now();
+          
           const options = await selectField.locator('option').all();
-          for (const option of options) {
-            const text = await option.textContent();
+          const optionsLoadTime = Date.now();
+          log.info(`[DEBUG] Loaded ${options.length} options in ${optionsLoadTime - startTime}ms`);
+          
+          for (let i = 0; i < options.length; i++) {
+            const optionStartTime = Date.now();
+            const text = await options[i].textContent();
+            const textLoadTime = Date.now();
+            
             if (text && text.toLowerCase().includes(currentValue.toLowerCase())) {
-              await option.click();
+              log.info(`[DEBUG] Found matching option at index ${i}: ${text} (loaded text in ${textLoadTime - optionStartTime}ms)`);
+              await options[i].click();
               log.info(`Select option selected by partial match: ${text} (searched: ${currentValue})`);
               return true;
+            } else {
+              log.info(`[DEBUG] Option ${i} "${text}" does not match "${currentValue}" (text loaded in ${textLoadTime - optionStartTime}ms)`);
             }
           }
-          log.warn(`Select option not found for value: ${currentValue}`);
+          
+          const totalTime = Date.now() - startTime;
+          log.warn(`Select option not found for value: ${currentValue} (total search time: ${totalTime}ms)`);
         } catch (e3) {
           log.warn(`Failed to select option ${currentValue}: ${e3.message}`);
         }
