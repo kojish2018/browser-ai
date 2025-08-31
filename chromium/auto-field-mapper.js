@@ -8,6 +8,7 @@ const log = require('./log');
 const fs = require('fs');
 const path = require('path');
 
+
 /**
  * セマンティックカテゴリと設定データのマッピング
  */
@@ -296,7 +297,7 @@ async function fillAutoMappedFields(page, autoMappedFields, humanLikeTyping, hum
       // フィールド入力の実行
       await humanLikeScroll(field);
       await humanLikeDelay(300, 800);
-      await humanLikeTyping(field, value, page, `auto_${category.toLowerCase()}`, fieldData);
+      await humanLikeTyping(field, value, page, `auto_${category.toLowerCase()}`, fieldData, {});
       
       successCount++;
       learnFromMappingResult(fieldData, value, true);

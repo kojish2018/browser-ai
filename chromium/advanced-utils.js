@@ -51,12 +51,13 @@ const humanLikeDelay = (min = 500, max = 1500) => {
 /**
  * 人間のように1文字ずつタイピングする（全フィールドタイプ対応・セマンティック対応）
  */
-async function humanLikeTyping(field, value, page, configKey = null, fieldData = null) {
+async function humanLikeTyping(field, value, page, configKey = null, fieldData = null, fieldSettings = {}) {
   const tagName = await field.evaluate(el => el.tagName.toLowerCase());
   const inputType = await field.getAttribute('type') || 'text';
 
   if (tagName === 'select') {
-    await selectOption(field, value);
+    const fallbackOptions = fieldSettings.fallbackOptions || [];
+    await selectOption(field, value, fallbackOptions);
   } else if (inputType === 'checkbox' || inputType === 'radio') {
     await handleCheckboxRadio(field, value, configKey, fieldData);
   } else if (inputType === 'file') {
@@ -70,36 +71,45 @@ async function humanLikeTyping(field, value, page, configKey = null, fieldData =
 }
 
 /**
- * select要素のオプション選択
+ * select要素のオプション選択（fallbackOptions対応）
  */
-async function selectOption(selectField, value) {
-  try {
-    // 値で選択を試す
-    await selectField.selectOption({ value: value });
-    log.info(`Select option selected by value: ${value}`);
-  } catch (e1) {
+async function selectOption(selectField, value, fallbackOptions = []) {
+  const allValues = [value, ...fallbackOptions].filter(Boolean);
+  
+  for (const currentValue of allValues) {
     try {
-      // ラベルで選択を試す
-      await selectField.selectOption({ label: value });
-      log.info(`Select option selected by label: ${value}`);
-    } catch (e2) {
+      // 値で選択を試す
+      await selectField.selectOption({ value: currentValue });
+      log.info(`Select option selected by value: ${currentValue}`);
+      return true;
+    } catch (e1) {
       try {
-        // 部分一致で選択を試す
-        const options = await selectField.locator('option').all();
-        for (const option of options) {
-          const text = await option.textContent();
-          if (text && text.toLowerCase().includes(value.toLowerCase())) {
-            await option.click();
-            log.info(`Select option selected by partial match: ${text}`);
-            return;
+        // ラベルで選択を試す
+        await selectField.selectOption({ label: currentValue });
+        log.info(`Select option selected by label: ${currentValue}`);
+        return true;
+      } catch (e2) {
+        try {
+          // 部分一致で選択を試す
+          const options = await selectField.locator('option').all();
+          for (const option of options) {
+            const text = await option.textContent();
+            if (text && text.toLowerCase().includes(currentValue.toLowerCase())) {
+              await option.click();
+              log.info(`Select option selected by partial match: ${text} (searched: ${currentValue})`);
+              return true;
+            }
           }
+          log.warn(`Select option not found for value: ${currentValue}`);
+        } catch (e3) {
+          log.warn(`Failed to select option ${currentValue}: ${e3.message}`);
         }
-        log.warn(`Select option not found for value: ${value}`);
-      } catch (e3) {
-        log.error(`Failed to select option: ${e3.message}`);
       }
     }
   }
+  
+  log.error(`All select options failed. Tried values: ${allValues.join(', ')}`);
+  return false;
 }
 
 /**
@@ -533,7 +543,7 @@ async function fillContactFormAdvanced(page, config) {
         // });
         
         // セマンティック情報なしで処理
-        await humanLikeTyping(field, value, page, key, null);
+        await humanLikeTyping(field, value, page, key, null, fieldSettings);
         
         log.info(`Field filled: "${key}" (value: ${typeof value === 'boolean' ? value : `"${value}"`})`);
         configFilledCount++;
@@ -837,27 +847,45 @@ async function humanLikeScroll(locator) {
  */
 async function submitFormAdvanced(page, config) {
   log.info('Looking for submit button...');
+  
+  // 2025年ベストプラクティス: フォーム準備確認
+  try {
+    await page.waitForSelector('form', { timeout: 5000 });
+  } catch (e) {
+    log.warn('No form element detected, proceeding with button search');
+  }
+  
   let submitButton = null;
 
-  const submitConfig = config.submitKeywords || ["申し込む", "送信", "確認", "Submit", "Send", "登録", "次へ"];
+  // 設定からsubmitKeywordsを正しく読み取り（オブジェクト配列対応）
+  const submitKeywords = config.submitKeywords || [
+    { text: "送信", priority: 1, selectors: ["button", "input[type=submit]", "a"] },
+    { text: "申し込む", priority: 1, selectors: ["button", "a"] }
+  ];
   
-  for (const kw of submitConfig) {
-    // より多様なセレクタ戦略
+  // 優先度順でソート（2025年ベストプラクティス）
+  submitKeywords.sort((a, b) => (a.priority || 999) - (b.priority || 999));
+  
+  for (const kwConfig of submitKeywords) {
+    const kw = kwConfig.text || kwConfig;
+    log.info(`Searching for submit button with keyword: "${kw}"`);
+    
+    // 2025年ベストプラクティス: getByRole()を最優先使用 + 部分一致検索
     const strategies = [
       () => page.getByRole('button', { name: kw }).first(),
       () => page.getByRole('link', { name: kw }).first(), 
-      () => page.locator(`input[type="submit"][value*="${kw}" i]`).first(),
-      () => page.locator(`button:has-text("${kw}")`).first(),
-      () => page.locator(`a:has-text("${kw}")`).first(),
-      () => page.locator(`*[onclick*="${kw}" i]`).first()
+      () => page.locator(`input[type="submit"][value*="${kw}" i]:visible`).first(),
+      () => page.locator(`button:has-text("${kw}"):visible`).first(),
+      () => page.locator(`a:has-text("${kw}"):visible`).first(),
+      () => page.locator(`*[onclick*="${kw}" i]:visible`).first()
     ];
 
     for (const strategy of strategies) {
       try {
         const button = strategy();
-        if (await button.isVisible()) {
+        if (await button.isVisible({ timeout: 1000 })) {
           submitButton = button;
-          log.info(`Submit button found: "${kw}"`);
+          log.info(`Submit button found: "${kw}" (2025 best practices)`);
           break;
         }
       } catch (e) {

@@ -4,6 +4,10 @@
     "contact_name": "山田 太郎", 
     "email": "aioxytocin@gmail.com",
     "phone": "03-1234-5678",
+    "department": "営業部",
+    "position": "マネージャー",
+    "inquiry_type": "サービス・製品について",
+    "subject": "AIソリューションに関するお問い合わせ",
     "message": "AIソリューションについてお問い合わせさせていただきます。",
     "prefecture": "東京都",
     "industry": "IT・ソフトウェア",
@@ -28,14 +32,12 @@
     },
     "contact_name": {
       "keywords": [
-        "representative_name", "contact_name", "person_name", "担当者氏名", "代表者氏名", "責任者氏名",
-        "担当者", "代表者", "責任者", "連絡担当者", "person", "contact", "representative",
-        "your_name", "customer_name", "client_name", "連絡者", "申込者", "user_name", "applicant_name", "full_name",
-        "氏名", "お名前", "姓名", "フルネーム", "名前", "person_in_charge", "rep_name", "contact_person", "name"
+        "contact_name", "person_name", "your_name", "customer_name", "client_name", "user_name", "applicant_name", "full_name",
+        "氏名", "お名前", "姓名", "フルネーム", "名前", "contact_person", "name"
       ],
       "detectionStrategies": ["direct_attributes", "structural_relation"],
       "priority": 1,
-      "regex": ["/.*name/i", "/氏名/", "/名前/", "/担当/", "/代表/", "/representative.*/i"],
+      "regex": ["/.*name/i", "/氏名/", "/名前/", "/お名前/"],
       "fallback": ["person", "user", "customer", "applicant"],
       "required": true
     },
@@ -62,6 +64,52 @@
       "priority": 2,
       "regex": ["/phone/i", "/tel/i", "/mobile/i", "/cell/i", "/電話/", "/携帯/", "/番号/"],
       "fallback": ["contact", "number"]
+    },
+    "department": {
+      "keywords": [
+        "department", "dept", "division", "section", "部署", "部門", "課", "室", "所属", "部署名",
+        "所属部署", "department_name", "section_name", "division_name", "営業部", "総務部", "企画部"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
+      "priority": 2,
+      "regex": ["/department/i", "/dept/i", "/division/i", "/部署/", "/部門/", "/所属/"],
+      "fallback": ["section", "group", "team"],
+      "fieldType": ["text", "select"]
+    },
+    "position": {
+      "keywords": [
+        "position", "role", "title", "job_title", "役職", "お立場", "立場", "職位", "職種",
+        "post", "designation", "職名", "役割", "ポジション"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
+      "priority": 2,
+      "regex": ["/position/i", "/role/i", "/title/i", "/役職/", "/立場/", "/職/"],
+      "fallback": ["job", "work"],
+      "fieldType": ["text", "select"]
+    },
+    "inquiry_type": {
+      "keywords": [
+        "inquiry_type", "contact_type", "inquiry_category", "問い合わせ種別", "お問い合わせ種別", "相談種別",
+        "問合せ種別", "種別", "カテゴリ", "category", "type", "お問い合わせ項目", "問い合わせ内容"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
+      "priority": 1,
+      "regex": ["/inquiry.*type/i", "/contact.*type/i", "/種別/", "/カテゴリ/", "/問.*合.*せ/"],
+      "fallback": ["category", "type", "select"],
+      "fieldType": ["select"],
+      "required": true,
+      "fallbackOptions": ["その他", "その他のご相談", "other", "Others", "その他のお問い合わせ", "その他相談", "一般的なお問い合わせ"]
+    },
+    "subject": {
+      "keywords": [
+        "subject", "title", "件名", "タイトル", "表題", "お問い合わせ件名", "相談件名", "inquiry_subject",
+        "message_subject", "contact_subject", "inquiry_title", "題名", "主題", "件名欄"
+      ],
+      "detectionStrategies": ["direct_attributes", "structural_relation"],
+      "priority": 1,
+      "regex": ["/subject/i", "/title/i", "/件名/", "/タイトル/", "/表題/", "/題名/"],
+      "fallback": ["title", "header", "topic"],
+      "fieldType": ["text"]
     },
     "message": {
       "keywords": [
